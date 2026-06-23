@@ -1,10 +1,30 @@
+import { AuthContext } from '../Context/AuthProvider';
+import { Navigate } from 'react-router';
+import { use } from 'react';
 
-const PrivateRoute = () => {
-    return (
-        <div>
-            
-        </div>
-    );
+const PrivateRoute = ({ children }) => {
+
+    const { user, loading } = use(AuthContext);
+
+    if (user)
+        return children;
+
+    if (loading)
+        return <Loading />
+
+    return <Navigate to={'/signin'}></Navigate>;
 };
 
 export default PrivateRoute;
+
+export const Loading = () => {
+
+    return (
+        <>
+
+            <div className='min-h-screen flex justify-center items-center'>
+                <span className="loading loading-spinner loading-xl "></span>
+            </div>
+        </>
+    );
+};

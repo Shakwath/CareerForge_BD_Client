@@ -1,19 +1,34 @@
-import { useState, useContext } from "react";
+import { useState, useContext, useEffect } from "react";
 import Registeri from "../../assets/SignUp.png";
 import { Link, useNavigate } from "react-router-dom";
 import { AuthContext } from "../../Context/AuthProvider";
 import { useForm } from "react-hook-form";
 import { toast } from "react-toastify";
 import { motion } from "framer-motion";
-import { Eye, EyeOff, Mail, Lock, User, ImageIcon, ArrowRight } from "lucide-react";
+import {
+  Eye,
+  EyeOff,
+  Mail,
+  Lock,
+  User,
+  ImageIcon,
+  ArrowRight,
+} from "lucide-react";
+import useAxios from "../../Hooks/useAxios";
+import axios from "axios";
 
 const SignUp = () => {
+  useEffect(() => {
+    document.title = "Sign Up";
+  }, []);
   const { createUser, setUser, updateUser, loading } = useContext(AuthContext);
   const navigate = useNavigate();
-
+  const axiosInstance = useAxios();
   const [firebaseError, setFirebaseError] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [profilePic, setProfilePic] = useState("");
+  const [uploading, setUploading] = useState(false);
 
   const {
     register,
@@ -25,56 +40,76 @@ const SignUp = () => {
 
   const passwordValue = watch("password");
 
-  const handleRegister = (data) => {
-    setFirebaseError("");
-
-    const { name, photo, email, password } = data;
-
+  const handleRegister = async (data) => {
+    const { email, password } = data;
     createUser(email, password)
-      .then((result) => {
-        const user = result.user;
+      .then(async (userCredential) => {
+        const user = userCredential.user;
 
-        updateUser({
-          displayName: name,
-          photoURL: photo,
-        })
-          .then(() => {
-            setUser({
-              ...user,
-              displayName: name,
-              photoURL: photo,
-            });
+        //create user in database
+        const userData = {
+          email: data.email,
+          name: data.name,
+          photoURL: profilePic,
+          experience_level: data.level,
+        };
 
-            toast.success("Account created successfully!");
-            reset();
-            navigate("/");
-          })
-          .catch((error) => {
-            console.error(error);
-            setUser(user);
-            toast.success("Account created, but profile update failed.");
-            navigate("/");
-          });
+        await axiosInstance.post("/api/users/register", userData);
+
+        // Update User Status in firebase
+        const userProfile = {
+          displayName: data.name,
+          photoURL: profilePic,
+        };
+
+        updateUser(userProfile).then(() => {
+          setUser({ ...user, displayName: data.name, photoURL: profilePic });
+          toast.success("Registration successful!");
+          navigate("/");
+        });
       })
       .catch((error) => {
-        const errorMessage = error.message || "Registration failed";
-
-        if (errorMessage.includes("auth/email-already-in-use")) {
-          toast.error("This email is already registered.");
-        } else if (errorMessage.includes("auth/invalid-email")) {
-          toast.error("Invalid email address.");
-        } else if (errorMessage.includes("auth/weak-password")) {
-          toast.error("Password is too weak.");
-        } else {
-          toast.error(errorMessage);
-        }
-
-        setFirebaseError(errorMessage);
+        setFirebaseError(error.message);
       });
   };
 
+  useEffect(() => {
+    reset();
+  }, []);
+
+  const handleImageUpload = async (e) => {
+    const image = e.target.files[0];
+
+    if (!image) {
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append("file", image);
+    formData.append(
+      "upload_preset",
+      import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET,
+    );
+    formData.append("cloud_name", import.meta.env.VITE_CLOUDINARY_CLOUD_NAME);
+
+    setUploading(true);
+    try {
+      const res = await axios.post(
+        `https://api.cloudinary.com/v1_1/${import.meta.env.VITE_CLOUDINARY_CLOUD_NAME}/image/upload`,
+        formData,
+      );
+
+      console.log("Uploaded image URL: ", res.data.secure_url);
+      setProfilePic(res.data.secure_url);
+    } catch (error) {
+      console.log("Cloudinary Imnage Upload failed", error);
+    } finally {
+      setUploading(false);
+    }
+  };
+
   return (
-    <section className="relative min-h-screen overflow-hidden bg-gradient-to-br from-slate-50 via-white to-blue-50 px-4 py-10 sm:px-6 lg:px-8">
+    <section className="relative min-h-screen overflow-hidden bg-linear-to-br from-slate-50 via-white to-blue-50 px-4 py-10 sm:px-6 lg:px-8">
       {/* background blur */}
       <div className="pointer-events-none absolute inset-0">
         <div className="absolute left-0 top-10 h-72 w-72 rounded-full bg-blue-200/30 blur-3xl" />
@@ -94,11 +129,11 @@ const SignUp = () => {
             <div className="absolute -top-6 -left-6 h-24 w-24 rounded-3xl bg-blue-500/10 blur-2xl" />
             <div className="absolute -bottom-6 right-0 h-28 w-28 rounded-3xl bg-violet-500/10 blur-2xl" />
 
-            <div className="rounded-[32px] border border-white/60 bg-white/70 p-5 shadow-[0_25px_80px_rgba(15,23,42,0.10)] backdrop-blur-xl">
+            <div className="rounded-4xl border border-white/60 bg-white/70 p-5 shadow-[0_25px_80px_rgba(15,23,42,0.10)] backdrop-blur-xl">
               <img
                 src={Registeri}
                 alt="Register Illustration"
-                className="w-full rounded-[24px] object-cover"
+                className="w-full rounded-3xl object-cover"
               />
             </div>
 
@@ -110,8 +145,9 @@ const SignUp = () => {
                 Start your career journey with a smarter AI-powered platform
               </h2>
               <p className="mt-3 leading-7 text-slate-600">
-                Create your account to unlock ATS CV analysis, personalized career
-                roadmaps, interview preparation, and more — all in one place.
+                Create your account to unlock ATS CV analysis, personalized
+                career roadmaps, interview preparation, and more — all in one
+                place.
               </p>
             </div>
           </div>
@@ -124,14 +160,15 @@ const SignUp = () => {
           transition={{ duration: 0.7 }}
           className="mx-auto w-full max-w-xl"
         >
-          <div className="rounded-[32px] border border-white/70 bg-white/80 p-6 shadow-[0_20px_70px_rgba(15,23,42,0.12)] backdrop-blur-2xl sm:p-8">
+          <div className="rounded-4xl border border-white/70 bg-white/80 p-6 shadow-[0_20px_70px_rgba(15,23,42,0.12)] backdrop-blur-2xl sm:p-8">
             {/* heading */}
             <div className="mb-6 text-center">
               <h1 className="text-3xl font-bold tracking-tight text-slate-900">
                 Register your account
               </h1>
               <p className="mt-2 text-sm text-slate-500">
-                Create your account and start building your future with confidence.
+                Create your account and start building your future with
+                confidence.
               </p>
             </div>
 
@@ -190,16 +227,10 @@ const SignUp = () => {
                 >
                   <ImageIcon className="h-5 w-5 text-slate-400" />
                   <input
-                    type="url"
-                    placeholder="https://example.com/photo.jpg"
-                    className="w-full bg-transparent px-3 py-3 text-slate-800 outline-none placeholder:text-slate-400"
-                    {...register("photo", {
-                      required: "Photo URL is required",
-                      pattern: {
-                        value: /^(https?:\/\/.*\.(?:png|jpg|jpeg|gif|webp))$/i,
-                        message: "Please enter a valid image URL",
-                      },
-                    })}
+                    type="file"
+                    onChange={handleImageUpload}
+                    className="w-full pl-12 pr-12 py-3  focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-200 text-slate-400 cursor-pointer"
+                    placeholder="Your Photo"
                   />
                 </div>
                 {errors.photo && (
@@ -238,6 +269,28 @@ const SignUp = () => {
                 {errors.email && (
                   <p className="mt-2 text-sm font-medium text-red-500">
                     {errors.email.message}
+                  </p>
+                )}
+              </div>
+
+              {/** Experience Level */}
+              <div>
+                <label className="mb-2 block text-sm font-semibold text-slate-700">
+                  Experience Level
+                </label>
+                <select
+                  {...register("level", {
+                    required: "Experience level is required",
+                  })}
+                  className="w-full rounded-2xl border border-gray-200 bg-white px-4 py-3  text-slate-800 outline-none placeholder:text-slate-400"
+                >
+                  <option value="Beginner">Beginner</option>
+                  <option value="Intermediate">Intermediate</option>
+                  <option value="Advanced">Advanced</option>
+                </select>
+                {errors.level && (
+                  <p className="mt-2 text-sm font-medium text-red-500">
+                    {errors.level.message}
                   </p>
                 )}
               </div>
@@ -321,9 +374,7 @@ const SignUp = () => {
 
                   <button
                     type="button"
-                    onClick={() =>
-                      setShowConfirmPassword(!showConfirmPassword)
-                    }
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                     className="text-slate-500 transition hover:text-slate-700"
                   >
                     {showConfirmPassword ? (
@@ -343,10 +394,10 @@ const SignUp = () => {
               {/* Submit Button */}
               <button
                 type="submit"
-                disabled={loading}
-                className="group flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-blue-600 via-indigo-600 to-violet-600 px-5 py-3.5 text-sm font-semibold text-white shadow-lg shadow-blue-500/20 transition duration-300 hover:-translate-y-0.5 hover:shadow-blue-500/30 disabled:cursor-not-allowed disabled:opacity-70"
+                disabled={loading || uploading}
+                className="group flex w-full items-center justify-center gap-2 rounded-2xl bg-linear-to-r from-blue-600 via-indigo-600 to-violet-600 px-5 py-3.5 text-sm font-semibold text-white shadow-lg shadow-blue-500/20 transition duration-300 hover:-translate-y-0.5 hover:shadow-blue-500/30 disabled:cursor-not-allowed disabled:opacity-70"
               >
-                {loading ? "Creating account..." : "Register"}
+                {uploading ? "Uploading image..." : loading ? "Creating account..." : "Register"}
                 {!loading && (
                   <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
                 )}

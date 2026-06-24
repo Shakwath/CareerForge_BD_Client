@@ -1,4 +1,4 @@
-import  { useState, useContext, useRef } from "react";
+import { useContext, useState } from "react";
 import google from "../../assets/google.png";
 import github from "../../assets/github.png";
 import login from "../../assets/login-illustration.png";
@@ -11,33 +11,43 @@ import {
 } from "firebase/auth";
 import auth from "../../Firebase/firebase.init";
 import { toast } from "react-toastify";
+import { useForm } from "react-hook-form";
+import { motion } from "framer-motion";
+import { Eye, EyeOff, Mail, Lock, ArrowRight } from "lucide-react";
+
 const SignIn = () => {
-  const [error, setError] = useState("");
+  const [firebaseError, setFirebaseError] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+
   const { signIn, loading } = useContext(AuthContext);
-  const [ setUser] = useState(null);
-  const emailRef = useRef();
   const location = useLocation();
   const navigate = useNavigate();
+
   const googleProvider = new GoogleAuthProvider();
   const githubProvider = new GithubAuthProvider();
 
+  const {
+    register,
+    handleSubmit,
+    watch,
+    formState: { errors },
+  } = useForm();
+
+  const emailValue = watch("email");
+
   const goToForget = () => {
-    const email = emailRef.current?.value;
-    navigate("/forgetpassword", { state: { email } });
+    navigate("/forgetpassword", { state: { email: emailValue || "" } });
   };
 
-  const handleLogin = (e) => {
-    e.preventDefault();
-    setError("");
-
-    const form = e.target;
-    const email = form.email.value;
-    const password = form.password.value;
+  const handleLogin = (data) => {
+    setFirebaseError("");
+    const { email, password } = data;
 
     signIn(email, password)
       .then((result) => {
-        navigate(location.state?.from?.pathname || "/");
+        console.log(result.user);
         toast.success("Login successful!");
+        navigate(location.state?.from?.pathname || "/");
       })
       .catch((error) => {
         const errorMessage = error.message || "Login failed";
@@ -46,133 +56,267 @@ const SignIn = () => {
           toast.error("Incorrect password. Try again or use 'Forgot password'.");
         } else if (errorMessage.includes("auth/user-not-found")) {
           toast.error("No user found with this email.");
+        } else if (errorMessage.includes("auth/invalid-credential")) {
+          toast.error("Invalid email or password.");
         } else {
           toast.error(errorMessage);
         }
-        setError(errorMessage);
+
+        setFirebaseError(errorMessage);
       });
   };
 
   const handleGoogleSignIn = () => {
+    setFirebaseError("");
     signInWithPopup(auth, googleProvider)
       .then((result) => {
-        setUser(result.user);
+        console.log(result.user);
         toast.success("Logged in with Google!");
         navigate(location.state?.from?.pathname || "/");
       })
       .catch((error) => {
-        setUser(null);
-        setError(error.message);
+        setFirebaseError(error.message);
         toast.error(error.message);
       });
   };
 
   const handleGithubSignIn = () => {
+    setFirebaseError("");
     signInWithPopup(auth, githubProvider)
       .then((result) => {
-        setUser(result.user);
+        console.log(result.user);
         toast.success("Logged in with GitHub!");
         navigate(location.state?.from?.pathname || "/");
       })
       .catch((error) => {
-        setError(error.message);
+        setFirebaseError(error.message);
         toast.error(error.message);
       });
   };
 
   return (
-    <div className="flex flex-col md:flex-row items-center md:items-start p-6 gap-6 mt-14">
-      {/* Left: Image */}
-      <div className="w-full md:w-1/2 flex justify-center items-center">
-        <img
-          src={login}
-          alt="Login Illustration"
-          className="w-full h-auto object-cover rounded-lg shadow-lg"
-        />
+    <section className="relative min-h-screen overflow-hidden bg-gradient-to-br from-slate-50 via-white to-blue-50 px-4 py-10 sm:px-6 lg:px-8">
+      {/* background blur */}
+      <div className="pointer-events-none absolute inset-0">
+        <div className="absolute left-0 top-10 h-72 w-72 rounded-full bg-blue-200/30 blur-3xl" />
+        <div className="absolute right-0 top-20 h-80 w-80 rounded-full bg-violet-200/25 blur-3xl" />
+        <div className="absolute bottom-0 left-1/3 h-72 w-72 rounded-full bg-cyan-100/30 blur-3xl" />
       </div>
 
-      {/* Right: Form */}
-      <div className="w-full md:w-1/2 flex flex-col items-center px-4">
-        <h2 className="font-semibold text-2xl text-center mb-4">
-          Login to your account
-        </h2>
+      <div className="relative mx-auto grid max-w-7xl grid-cols-1 items-center gap-8 lg:grid-cols-2">
+        {/* LEFT SIDE */}
+        <motion.div
+          initial={{ opacity: 0, x: -35 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.7 }}
+          className="hidden lg:block"
+        >
+          <div className="relative mx-auto max-w-xl">
+            <div className="absolute -top-6 -left-6 h-24 w-24 rounded-3xl bg-blue-500/10 blur-2xl" />
+            <div className="absolute -bottom-6 right-0 h-28 w-28 rounded-3xl bg-violet-500/10 blur-2xl" />
 
-        <form onSubmit={handleLogin} className="w-full max-w-md">
-          <fieldset className="space-y-4">
-            <div>
-              <label className="mb-2 text-lg font-semibold block">Email</label>
-              <input
-                name="email"
-                type="email"
-                ref={emailRef}
-                className="input input-bordered w-full"
-                placeholder="Email"
-                required
+            <div className="rounded-[32px] border border-white/60 bg-white/70 p-5 shadow-[0_25px_80px_rgba(15,23,42,0.10)] backdrop-blur-xl">
+              <img
+                src={login}
+                alt="Login Illustration"
+                className="w-full rounded-[24px] object-cover"
               />
             </div>
 
-            <div>
-              <label className="mb-2 text-lg font-semibold block">Password</label>
-              <input
-                name="password"
-                type="password"
-                className="input input-bordered w-full"
-                placeholder="Password"
-                required
-              />
-            </div>
-
-            <div className="text-right">
-              <button
-                type="button"
-                onClick={goToForget}
-                className="text-cyan-700 link link-hover"
-              >
-                Forgot password?
-              </button>
-            </div>
-
-            {error && <p className="text-red-400 text-sm">{error}</p>}
-
-            <button
-              type="submit"
-              className="btn btn-neutral w-full"
-              disabled={loading}
-            >
-              {loading ? "Logging in..." : "Login"}
-            </button>
-
-            <p className="text-center font-semibold pt-4">
-              Don’t have an account?{" "}
-              <Link className="text-secondary" to="/Register">
-                Register
-              </Link>
-            </p>
-          </fieldset>
-
-          {/* Social Login */}
-          <div className="mt-6">
-            <h2 className="font-semibold text-center">Login with</h2>
-            <div className="flex justify-center gap-4 mt-4">
-              <button
-                type="button"
-                onClick={handleGoogleSignIn}
-                className="w-12 h-12 flex items-center justify-center rounded-full shadow border"
-              >
-                <img src={google} alt="Google" className="h-6 w-6" />
-              </button>
-              <button
-                type="button"
-                onClick={handleGithubSignIn}
-                className="w-12 h-12 flex items-center justify-center rounded-full shadow border"
-              >
-                <img src={github} alt="GitHub" className="h-6 w-6" />
-              </button>
+            <div className="mt-5 max-w-lg">
+              <p className="inline-flex items-center rounded-full border border-blue-200 bg-blue-50 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-blue-700">
+                Welcome back
+              </p>
+              <h2 className="mt-3 text-3xl font-bold tracking-tight text-slate-900">
+                Continue building your dream career with CareerForge BD
+              </h2>
+              <p className="mt-3 leading-7 text-slate-600">
+                Log in to access ATS CV analysis, AI career roadmap, interview
+                preparation and your saved progress — all in one place.
+              </p>
             </div>
           </div>
-        </form>
+        </motion.div>
+
+        {/* RIGHT SIDE FORM */}
+        <motion.div
+          initial={{ opacity: 0, y: 35 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.7 }}
+          className="mx-auto w-full max-w-xl"
+        >
+          <div className="rounded-[32px] border border-white/70 bg-white/80 p-6 shadow-[0_20px_70px_rgba(15,23,42,0.12)] backdrop-blur-2xl sm:p-8">
+            {/* heading */}
+            <div className="mb-6 text-center">
+              <h1 className="text-3xl font-bold tracking-tight text-slate-900">
+                Login to your account
+              </h1>
+              <p className="mt-2 text-sm text-slate-500">
+                Welcome back! Please enter your credentials to continue.
+              </p>
+            </div>
+
+            <form onSubmit={handleSubmit(handleLogin)} className="space-y-5">
+              {/* Firebase error */}
+              {firebaseError && (
+                <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600">
+                  {firebaseError}
+                </div>
+              )}
+
+              {/* Email */}
+              <div>
+                <label className="mb-2 block text-sm font-semibold text-slate-700">
+                  Email Address
+                </label>
+
+                <div
+                  className={`flex items-center rounded-2xl border bg-white px-4 transition ${
+                    errors.email
+                      ? "border-red-400 ring-2 ring-red-100"
+                      : "border-slate-200"
+                  }`}
+                >
+                  <Mail className="h-5 w-5 text-slate-400" />
+                  <input
+                    type="email"
+                    placeholder="Enter your email"
+                    className="w-full rounded-2xl bg-transparent px-3 py-3 text-slate-800 outline-none placeholder:text-slate-400"
+                    {...register("email", {
+                      required: "Email is required",
+                      pattern: {
+                        value: /^\S+@\S+\.\S+$/,
+                        message: "Please enter a valid email address",
+                      },
+                    })}
+                  />
+                </div>
+
+                {errors.email && (
+                  <p className="mt-2 text-sm font-medium text-red-500">
+                    {errors.email.message}
+                  </p>
+                )}
+              </div>
+
+              {/* Password */}
+              <div>
+                <label className="mb-2 block text-sm font-semibold text-slate-700">
+                  Password
+                </label>
+
+                <div
+                  className={`flex items-center rounded-2xl border bg-white px-4 transition ${
+                    errors.password
+                      ? "border-red-400 ring-2 ring-red-100"
+                      : "border-slate-200"
+                  }`}
+                >
+                  <Lock className="h-5 w-5 text-slate-400" />
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    placeholder="Enter your password"
+                    className="w-full bg-transparent px-3 py-3 text-slate-800 outline-none placeholder:text-slate-400"
+                    {...register("password", {
+                      required: "Password is required",
+                      minLength: {
+                        value: 6,
+                        message: "Password must be at least 6 characters",
+                      },
+                    })}
+                  />
+
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="text-slate-500 transition hover:text-slate-700"
+                  >
+                    {showPassword ? (
+                      <EyeOff className="h-5 w-5" />
+                    ) : (
+                      <Eye className="h-5 w-5" />
+                    )}
+                  </button>
+                </div>
+
+                {errors.password && (
+                  <p className="mt-2 text-sm font-medium text-red-500">
+                    {errors.password.message}
+                  </p>
+                )}
+              </div>
+
+              {/* forgot password */}
+              <div className="flex items-center justify-end">
+                <button
+                  type="button"
+                  onClick={goToForget}
+                  className="text-sm font-medium text-blue-600 transition hover:text-blue-700 hover:underline"
+                >
+                  Forgot password?
+                </button>
+              </div>
+
+              {/* submit */}
+              <button
+                type="submit"
+                disabled={loading}
+                className="group flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-blue-600 via-indigo-600 to-violet-600 px-5 py-3.5 text-sm font-semibold text-white shadow-lg shadow-blue-500/20 transition duration-300 hover:-translate-y-0.5 hover:shadow-blue-500/30 disabled:cursor-not-allowed disabled:opacity-70"
+              >
+                {loading ? "Logging in..." : "Login"}
+                {!loading && (
+                  <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
+                )}
+              </button>
+
+              {/* register */}
+              <p className="pt-1 text-center text-sm text-slate-600">
+                Don&apos;t have an account?{" "}
+                <Link
+                  className="font-semibold text-blue-600 transition hover:text-blue-700"
+                  to="/signup"
+                >
+                  Register
+                </Link>
+              </p>
+
+              {/* divider */}
+              <div className="relative py-1">
+                <div className="absolute inset-0 flex items-center">
+                  <div className="w-full border-t border-slate-200" />
+                </div>
+                <div className="relative flex justify-center">
+                  <span className="bg-white px-4 text-sm text-slate-500">
+                    Or continue with
+                  </span>
+                </div>
+              </div>
+
+              {/* social login */}
+              <div className="grid grid-cols-2 gap-4">
+                <button
+                  type="button"
+                  onClick={handleGoogleSignIn}
+                  className="flex items-center justify-center gap-3 rounded-2xl border border-slate-200 bg-white px-4 py-3 font-medium text-slate-700 shadow-sm transition hover:-translate-y-0.5 hover:border-slate-300 hover:bg-slate-50"
+                >
+                  <img src={google} alt="Google" className="h-5 w-5" />
+                  <span>Google</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={handleGithubSignIn}
+                  className="flex items-center justify-center gap-3 rounded-2xl border border-slate-200 bg-white px-4 py-3 font-medium text-slate-700 shadow-sm transition hover:-translate-y-0.5 hover:border-slate-300 hover:bg-slate-50"
+                >
+                  <img src={github} alt="GitHub" className="h-5 w-5" />
+                  <span>GitHub</span>
+                </button>
+              </div>
+            </form>
+          </div>
+        </motion.div>
       </div>
-    </div>
+    </section>
   );
 };
 

@@ -4,7 +4,8 @@ import Footer from '../Pages/Home/Footer';
 
 const RootLayout = () => {
     return (
-        <div className='bg-base'>
+            <div className="min-h-screen bg-[#fffaf2] text-slate-900 transition-colors duration-300 dark:bg-[#050816] dark:text-white">
+
             <Navbar></Navbar>
             <div>
                 <Outlet></Outlet>

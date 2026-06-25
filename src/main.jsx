@@ -3,12 +3,14 @@ import './index.css'
 import { RouterProvider } from "react-router-dom";
 import router from './router/router.jsx'
 import { Toaster } from "react-hot-toast";
+import ThemeProvider from "./Context/ThemeProvider";
 import AuthProvider from './Context/AuthProvider.jsx'
 
 createRoot(document.getElementById('root')).render(
-   <AuthProvider>
-      <RouterProvider router={router}></RouterProvider>
-      <Toaster />
-
-   </AuthProvider>
+   <ThemeProvider>
+      <AuthProvider>
+         <RouterProvider router={router}></RouterProvider>
+         <Toaster />
+      </AuthProvider>
+   </ThemeProvider>
 )

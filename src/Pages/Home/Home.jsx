@@ -1,7 +1,7 @@
-import Banner from "./Banner";
-import FeaturesSection from "./Features/FeaturesSection";
-import HowItWorks from "./Features/HowItWorks";
-import StatsSection from "./Features/StatsSection";
+import Banner from "../../Components/Home/Banner";
+import FeaturesSection from "../../Components/Home/FeaturesSection";
+import HowItWorks from "../../Components/Home/HowItWorks";
+import StatsSection from "../../Components/Home/StatsSection";
 
 const Home = () => {
     return (

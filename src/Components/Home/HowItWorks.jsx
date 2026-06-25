@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { useTheme } from "../../../Context/ThemeProvider";
+import { useTheme } from "../../Context/ThemeProvider";
 import {
   UploadCloud,
   ClipboardPaste,
@@ -68,7 +68,7 @@ const HowItWorks = () => {
             }`}
           >
             From CV to Career Strategy in{" "}
-            <span className="bg-gradient-to-r from-indigo-500 via-violet-500 to-fuchsia-500 bg-clip-text text-transparent">
+            <span className="bg-linear-to-r from-indigo-500 via-violet-500 to-fuchsia-500 bg-clip-text text-transparent">
               3 Simple Steps
             </span>
           </h2>
@@ -115,13 +115,13 @@ const HowItWorks = () => {
                 <div
                   className={`group relative h-full overflow-hidden rounded-3xl border p-6 sm:p-7 transition duration-300 hover:-translate-y-1 ${
                     isDark
-                      ? "border-white/10 bg-white/[0.05] shadow-[0_20px_60px_rgba(0,0,0,0.25)]"
+                      ? "border-white/10 bg-white/5 shadow-[0_20px_60px_rgba(0,0,0,0.25)]"
                       : "border-slate-200 bg-white/80 shadow-[0_20px_60px_rgba(15,23,42,0.08)]"
                   }`}
                 >
                   {/* glow */}
                   <div className="pointer-events-none absolute inset-0 opacity-0 transition duration-300 group-hover:opacity-100">
-                    <div className="absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-indigo-500/10 to-transparent" />
+                    <div className="absolute inset-x-0 top-0 h-32 bg-linear-to-b from-indigo-500/10 to-transparent" />
                   </div>
 
                   {/* step number */}
@@ -136,11 +136,11 @@ const HowItWorks = () => {
                       STEP {step.id}
                     </span>
 
-                    <div className="h-px flex-1 mx-4 bg-gradient-to-r from-indigo-500/30 to-transparent" />
+                    <div className="h-px flex-1 mx-4 bg-linear-to-r from-indigo-500/30 to-transparent" />
                   </div>
 
                   {/* icon */}
-                  <div className="mb-5 inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-500 via-violet-500 to-fuchsia-500 text-white shadow-lg shadow-indigo-500/20">
+                  <div className="mb-5 inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-linear-to-br from-indigo-500 via-violet-500 to-fuchsia-500 text-white shadow-lg shadow-indigo-500/20">
                     <Icon className="h-6 w-6" />
                   </div>
 

@@ -8,7 +8,7 @@ import {
   Sparkles,
   ArrowUpRight,
 } from "lucide-react";
-import { useTheme } from "../../../Context/ThemeProvider";
+import { useTheme } from "../../Context/ThemeProvider";
 
 const StatsSection = () => {
   const { theme } = useTheme();
@@ -113,8 +113,8 @@ const StatsSection = () => {
       <div
         className={`absolute inset-0 -z-20 transition-colors duration-300 ${
           isDark
-            ? "bg-gradient-to-b from-[#050816] via-[#07111f] to-[#050816]"
-            : "bg-gradient-to-b from-[#f8fbff] via-[#fffdf8] to-[#f6f7fb]"
+            ? "bg-linear-to-b from-[#050816] via-[#07111f] to-[#050816]"
+            : "bg-linear-to-b from-[#f8fbff] via-[#fffdf8] to-[#f6f7fb]"
         }`}
       />
 
@@ -138,7 +138,7 @@ const StatsSection = () => {
       </div>
 
       {/* grid */}
-      <div className="pointer-events-none absolute inset-0 -z-10 opacity-[0.12] [mask-image:radial-gradient(circle_at_center,black,transparent_78%)]">
+      <div className="pointer-events-none absolute inset-0 -z-10 opacity-[0.12] mask-[radial-gradient(circle_at_center,black,transparent_78%)]">
         <div
           className="h-full w-full"
           style={{
@@ -195,8 +195,8 @@ const StatsSection = () => {
             <span
               className={`block bg-clip-text text-transparent ${
                 isDark
-                  ? "bg-gradient-to-r from-cyan-300 via-blue-300 to-violet-300"
-                  : "bg-gradient-to-r from-amber-500 via-orange-500 to-rose-500"
+                  ? "bg-linear-to-r from-cyan-300 via-blue-300 to-violet-300"
+                  : "bg-linear-to-r from-amber-500 via-orange-500 to-rose-500"
               }`}
             >
               Career Growth
@@ -232,7 +232,7 @@ const StatsSection = () => {
                 }`}
               >
                 <div
-                  className={`pointer-events-none absolute inset-0 bg-gradient-to-br ${item.glow} opacity-70`}
+                  className={`pointer-events-none absolute inset-0 bg-linear-to-br ${item.glow} opacity-70`}
                 />
 
                 <div className="relative z-10 flex items-start justify-between">

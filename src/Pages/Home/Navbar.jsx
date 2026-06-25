@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, NavLink } from "react-router-dom";
 import { useAuth } from "../../Context/AuthProvider";
+import { useTheme } from "../../Context/ThemeProvider";
 import {
   Menu,
   X,
@@ -11,6 +12,8 @@ import {
   Map,
   Info,
   Home,
+  Moon,
+  Sun,
 } from "lucide-react";
 
 const Navbar = () => {
@@ -19,6 +22,10 @@ const Navbar = () => {
   const profileRef = useRef(null);
 
   const { user, logOut } = useAuth();
+
+  // IMPORTANT: theme provider theke nite hobe
+  const { theme, toggleTheme } = useTheme();
+  const isDark = theme === "dark";
 
   const handleLogout = async () => {
     try {
@@ -30,7 +37,6 @@ const Navbar = () => {
     }
   };
 
-  // outside click close for profile dropdown
   useEffect(() => {
     const handleClickOutside = (e) => {
       if (profileRef.current && !profileRef.current.contains(e.target)) {
@@ -44,15 +50,25 @@ const Navbar = () => {
 
   return (
     <header className="sticky top-3 z-50 px-3 sm:px-4">
-      <nav className="mx-auto max-w-7xl rounded-2xl border border-white/10 bg-slate-950/70 shadow-2xl shadow-black/20 backdrop-blur-2xl supports-[backdrop-filter]:bg-slate-950/55">
-
-        {/* decorative glow */}
-        <div className="pointer-events-none absolute inset-0 rounded-2xl bg-[radial-gradient(circle_at_top_left,rgba(99,102,241,0.16),transparent_28%),radial-gradient(circle_at_top_right,rgba(168,85,247,0.14),transparent_28%)]" />
+      <nav
+        className={`relative mx-auto max-w-7xl rounded-2xl border shadow-2xl backdrop-blur-2xl transition-colors duration-300
+          ${
+            isDark
+              ? "border-white/10 bg-slate-950/70 text-white shadow-black/20 supports-[backdrop-filter]:bg-slate-950/55"
+              : "border-slate-200/70 bg-white/75 text-slate-900 shadow-slate-300/30 supports-[backdrop-filter]:bg-white/65"
+          }`}
+      >
+        <div
+          className={`pointer-events-none absolute inset-0 rounded-2xl ${
+            isDark
+              ? "bg-[radial-gradient(circle_at_top_left,rgba(99,102,241,0.16),transparent_28%),radial-gradient(circle_at_top_right,rgba(168,85,247,0.14),transparent_28%)]"
+              : "bg-[radial-gradient(circle_at_top_left,rgba(99,102,241,0.10),transparent_28%),radial-gradient(circle_at_top_right,rgba(168,85,247,0.08),transparent_28%)]"
+          }`}
+        />
 
         <div className="relative flex h-16 items-center justify-between px-4 sm:px-6 lg:px-8">
           {/* LEFT */}
           <div className="flex items-center gap-8">
-            {/* Logo */}
             <Link to="/" className="group flex items-center gap-3">
               <div className="relative flex h-10 w-10 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-500 via-violet-500 to-fuchsia-500 text-white shadow-lg shadow-indigo-500/25 transition duration-300 group-hover:scale-105">
                 <span className="text-sm font-extrabold tracking-wide">CF</span>
@@ -60,22 +76,40 @@ const Navbar = () => {
               </div>
 
               <div className="leading-tight">
-                <h1 className="text-base sm:text-lg font-bold tracking-tight text-white">
-                  CareerForge <span className="text-indigo-400">BD</span>
+                <h1
+                  className={`text-base font-bold tracking-tight sm:text-lg ${
+                    isDark ? "text-white" : "text-slate-900"
+                  }`}
+                >
+                  CareerForge <span className="text-indigo-500">BD</span>
                 </h1>
-                <p className="text-[11px] text-slate-400 -mt-0.5">
+                <p
+                  className={`-mt-0.5 text-[11px] ${
+                    isDark ? "text-slate-400" : "text-slate-500"
+                  }`}
+                >
                   Build smarter careers
                 </p>
               </div>
             </Link>
 
             {/* Desktop nav */}
-            <div className="hidden md:flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.03] p-1">
-              <DesktopNavItem to="/" icon={<Home size={16} />}>
+            <div
+              className={`hidden items-center gap-2 rounded-full border p-1 md:flex ${
+                isDark
+                  ? "border-white/10 bg-white/[0.03]"
+                  : "border-slate-200 bg-slate-100/80"
+              }`}
+            >
+              <DesktopNavItem to="/" icon={<Home size={16} />} isDark={isDark}>
                 Home
               </DesktopNavItem>
 
-              <DesktopNavItem to="/about" icon={<Info size={16} />}>
+              <DesktopNavItem
+                to="/about"
+                icon={<Info size={16} />}
+                isDark={isDark}
+              >
                 About
               </DesktopNavItem>
 
@@ -84,11 +118,16 @@ const Navbar = () => {
                   <DesktopNavItem
                     to="/dashboard"
                     icon={<LayoutDashboard size={16} />}
+                    isDark={isDark}
                   >
                     Dashboard
                   </DesktopNavItem>
 
-                  <DesktopNavItem to="/roadmap" icon={<Map size={16} />}>
+                  <DesktopNavItem
+                    to="/roadmap"
+                    icon={<Map size={16} />}
+                    isDark={isDark}
+                  >
                     Roadmap
                   </DesktopNavItem>
                 </>
@@ -97,12 +136,30 @@ const Navbar = () => {
           </div>
 
           {/* RIGHT DESKTOP */}
-          <div className="hidden md:flex items-center gap-3">
+          <div className="hidden items-center gap-3 md:flex">
+            <button
+              onClick={toggleTheme}
+              aria-label="Toggle theme"
+              className={`group flex h-11 w-11 items-center justify-center rounded-2xl border transition duration-300 ${
+                isDark
+                  ? "border-white/10 bg-white/[0.05] text-slate-200 hover:bg-white/[0.08]"
+                  : "border-slate-200 bg-slate-100/80 text-slate-700 hover:bg-slate-200/80"
+              }`}
+            >
+              <span className="transition duration-300 group-hover:rotate-12">
+                {isDark ? <Sun size={18} /> : <Moon size={18} />}
+              </span>
+            </button>
+
             {!user ? (
               <>
                 <Link
                   to="/signin"
-                  className="rounded-full border border-transparent px-4 py-2 text-sm font-medium text-slate-300 transition hover:border-white/10 hover:bg-white/5 hover:text-white"
+                  className={`rounded-full border border-transparent px-4 py-2 text-sm font-medium transition ${
+                    isDark
+                      ? "text-slate-300 hover:border-white/10 hover:bg-white/5 hover:text-white"
+                      : "text-slate-700 hover:border-slate-200 hover:bg-slate-100 hover:text-slate-900"
+                  }`}
                 >
                   Login
                 </Link>
@@ -118,7 +175,11 @@ const Navbar = () => {
               <div className="relative" ref={profileRef}>
                 <button
                   onClick={() => setIsProfileOpen((prev) => !prev)}
-                  className="group flex items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.05] px-3 py-2 transition duration-300 hover:bg-white/[0.08]"
+                  className={`group flex items-center gap-3 rounded-2xl border px-3 py-2 transition duration-300 ${
+                    isDark
+                      ? "border-white/10 bg-white/[0.05] hover:bg-white/[0.08]"
+                      : "border-slate-200 bg-slate-100/80 hover:bg-slate-200/80"
+                  }`}
                 >
                   {user?.photoURL ? (
                     <img
@@ -133,24 +194,43 @@ const Navbar = () => {
                   )}
 
                   <div className="text-left">
-                    <p className="max-w-[140px] truncate text-sm font-semibold text-white">
+                    <p
+                      className={`max-w-[140px] truncate text-sm font-semibold ${
+                        isDark ? "text-white" : "text-slate-900"
+                      }`}
+                    >
                       {user?.displayName || "User"}
                     </p>
-                    <p className="text-xs text-slate-400">Personal Account</p>
+                    <p
+                      className={`text-xs ${
+                        isDark ? "text-slate-400" : "text-slate-500"
+                      }`}
+                    >
+                      Personal Account
+                    </p>
                   </div>
 
                   <ChevronDown
                     size={16}
-                    className={`text-slate-400 transition duration-200 ${
+                    className={`transition duration-200 ${
                       isProfileOpen ? "rotate-180" : ""
-                    }`}
+                    } ${isDark ? "text-slate-400" : "text-slate-500"}`}
                   />
                 </button>
 
                 {isProfileOpen && (
-                  <div className="absolute right-0 mt-3 w-72 overflow-hidden rounded-3xl border border-white/10 bg-slate-900/95 shadow-2xl shadow-black/30 backdrop-blur-2xl">
-                    {/* top profile section */}
-                    <div className="relative overflow-hidden border-b border-white/10 px-4 py-4">
+                  <div
+                    className={`absolute right-0 mt-3 w-72 overflow-hidden rounded-3xl border shadow-2xl backdrop-blur-2xl ${
+                      isDark
+                        ? "border-white/10 bg-slate-900/95 shadow-black/30"
+                        : "border-slate-200 bg-white/95 shadow-slate-300/40"
+                    }`}
+                  >
+                    <div
+                      className={`relative overflow-hidden border-b px-4 py-4 ${
+                        isDark ? "border-white/10" : "border-slate-200"
+                      }`}
+                    >
                       <div className="absolute inset-0 bg-gradient-to-r from-indigo-500/10 via-violet-500/10 to-fuchsia-500/10" />
                       <div className="relative flex items-center gap-3">
                         {user?.photoURL ? (
@@ -166,22 +246,30 @@ const Navbar = () => {
                         )}
 
                         <div className="min-w-0">
-                          <p className="truncate text-sm font-semibold text-white">
+                          <p
+                            className={`truncate text-sm font-semibold ${
+                              isDark ? "text-white" : "text-slate-900"
+                            }`}
+                          >
                             {user?.displayName || "User"}
                           </p>
-                          <p className="truncate text-xs text-slate-400">
+                          <p
+                            className={`truncate text-xs ${
+                              isDark ? "text-slate-400" : "text-slate-500"
+                            }`}
+                          >
                             {user?.email}
                           </p>
                         </div>
                       </div>
                     </div>
 
-                    {/* menu */}
                     <div className="p-2">
                       <DropdownLink
                         to="/updateprofile"
                         icon={<User size={16} />}
                         onClick={() => setIsProfileOpen(false)}
+                        isDark={isDark}
                       >
                         My Profile
                       </DropdownLink>
@@ -190,6 +278,7 @@ const Navbar = () => {
                         to="/dashboard"
                         icon={<LayoutDashboard size={16} />}
                         onClick={() => setIsProfileOpen(false)}
+                        isDark={isDark}
                       >
                         Dashboard
                       </DropdownLink>
@@ -198,15 +287,20 @@ const Navbar = () => {
                         to="/roadmap"
                         icon={<Map size={16} />}
                         onClick={() => setIsProfileOpen(false)}
+                        isDark={isDark}
                       >
                         Roadmap
                       </DropdownLink>
 
-                      <div className="my-2 h-px bg-white/10" />
+                      <div
+                        className={`my-2 h-px ${
+                          isDark ? "bg-white/10" : "bg-slate-200"
+                        }`}
+                      />
 
                       <button
                         onClick={handleLogout}
-                        className="flex w-full items-center gap-3 rounded-2xl px-3 py-2.5 text-left text-sm font-medium text-red-400 transition hover:bg-red-500/10"
+                        className="flex w-full items-center gap-3 rounded-2xl px-3 py-2.5 text-left text-sm font-medium text-red-500 transition hover:bg-red-500/10"
                       >
                         <LogOut size={16} />
                         Logout
@@ -218,11 +312,27 @@ const Navbar = () => {
             )}
           </div>
 
-          {/* MOBILE TOGGLE */}
-          <div className="md:hidden">
+          {/* MOBILE RIGHT */}
+          <div className="flex items-center gap-2 md:hidden">
+            <button
+              onClick={toggleTheme}
+              aria-label="Toggle theme"
+              className={`rounded-xl border p-2 transition ${
+                isDark
+                  ? "border-white/10 bg-white/5 text-slate-200 hover:bg-white/10"
+                  : "border-slate-200 bg-slate-100 text-slate-700 hover:bg-slate-200"
+              }`}
+            >
+              {isDark ? <Sun size={20} /> : <Moon size={20} />}
+            </button>
+
             <button
               onClick={() => setIsOpen((prev) => !prev)}
-              className="rounded-xl border border-white/10 bg-white/5 p-2 text-slate-200 transition hover:bg-white/10"
+              className={`rounded-xl border p-2 transition ${
+                isDark
+                  ? "border-white/10 bg-white/5 text-slate-200 hover:bg-white/10"
+                  : "border-slate-200 bg-slate-100 text-slate-700 hover:bg-slate-200"
+              }`}
             >
               {isOpen ? <X size={22} /> : <Menu size={22} />}
             </button>
@@ -231,14 +341,28 @@ const Navbar = () => {
 
         {/* MOBILE MENU */}
         <div
-          className={`md:hidden overflow-hidden transition-all duration-300 ${
-            isOpen ? "max-h-[650px] border-t border-white/10" : "max-h-0"
+          className={`overflow-hidden transition-all duration-300 md:hidden ${
+            isOpen
+              ? `max-h-[650px] border-t ${
+                  isDark ? "border-white/10" : "border-slate-200"
+                }`
+              : "max-h-0"
           }`}
         >
-          <div className="bg-slate-950/85 px-4 py-4 backdrop-blur-2xl">
+          <div
+            className={`px-4 py-4 backdrop-blur-2xl ${
+              isDark ? "bg-slate-950/85" : "bg-white/85"
+            }`}
+          >
             <div className="flex flex-col gap-2">
               {user && (
-                <div className="mb-2 rounded-3xl border border-white/10 bg-white/[0.05] p-4">
+                <div
+                  className={`mb-2 rounded-3xl border p-4 ${
+                    isDark
+                      ? "border-white/10 bg-white/[0.05]"
+                      : "border-slate-200 bg-slate-100/80"
+                  }`}
+                >
                   <div className="flex items-center gap-3">
                     {user?.photoURL ? (
                       <img
@@ -253,10 +377,18 @@ const Navbar = () => {
                     )}
 
                     <div className="min-w-0">
-                      <p className="truncate font-semibold text-white">
+                      <p
+                        className={`truncate font-semibold ${
+                          isDark ? "text-white" : "text-slate-900"
+                        }`}
+                      >
                         {user?.displayName || "User"}
                       </p>
-                      <p className="truncate text-sm text-slate-400">
+                      <p
+                        className={`truncate text-sm ${
+                          isDark ? "text-slate-400" : "text-slate-500"
+                        }`}
+                      >
                         {user?.email}
                       </p>
                     </div>
@@ -268,6 +400,7 @@ const Navbar = () => {
                 to="/"
                 icon={<Home size={16} />}
                 onClick={() => setIsOpen(false)}
+                isDark={isDark}
               >
                 Home
               </MobileNavLink>
@@ -276,6 +409,7 @@ const Navbar = () => {
                 to="/about"
                 icon={<Info size={16} />}
                 onClick={() => setIsOpen(false)}
+                isDark={isDark}
               >
                 About
               </MobileNavLink>
@@ -286,6 +420,7 @@ const Navbar = () => {
                     to="/dashboard"
                     icon={<LayoutDashboard size={16} />}
                     onClick={() => setIsOpen(false)}
+                    isDark={isDark}
                   >
                     Dashboard
                   </MobileNavLink>
@@ -294,6 +429,7 @@ const Navbar = () => {
                     to="/roadmap"
                     icon={<Map size={16} />}
                     onClick={() => setIsOpen(false)}
+                    isDark={isDark}
                   >
                     Roadmap
                   </MobileNavLink>
@@ -302,13 +438,14 @@ const Navbar = () => {
                     to="/updateprofile"
                     icon={<User size={16} />}
                     onClick={() => setIsOpen(false)}
+                    isDark={isDark}
                   >
                     My Profile
                   </MobileNavLink>
 
                   <button
                     onClick={handleLogout}
-                    className="mt-2 flex items-center gap-3 rounded-2xl px-4 py-3 text-left text-sm font-medium text-red-400 transition hover:bg-red-500/10"
+                    className="mt-2 flex items-center gap-3 rounded-2xl px-4 py-3 text-left text-sm font-medium text-red-500 transition hover:bg-red-500/10"
                   >
                     <LogOut size={16} />
                     Logout
@@ -320,6 +457,7 @@ const Navbar = () => {
                     to="/signin"
                     icon={<User size={16} />}
                     onClick={() => setIsOpen(false)}
+                    isDark={isDark}
                   >
                     Login
                   </MobileNavLink>
@@ -341,15 +479,19 @@ const Navbar = () => {
   );
 };
 
-function DesktopNavItem({ to, children, icon }) {
+function DesktopNavItem({ to, children, icon, isDark }) {
   return (
     <NavLink
       to={to}
       className={({ isActive }) =>
         `flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium transition ${
           isActive
-            ? "bg-white/10 text-white shadow-inner"
-            : "text-slate-300 hover:bg-white/5 hover:text-white"
+            ? isDark
+              ? "bg-white/10 text-white shadow-inner"
+              : "bg-white text-slate-900 shadow-sm"
+            : isDark
+            ? "text-slate-300 hover:bg-white/5 hover:text-white"
+            : "text-slate-700 hover:bg-white hover:text-slate-900"
         }`
       }
     >
@@ -359,12 +501,16 @@ function DesktopNavItem({ to, children, icon }) {
   );
 }
 
-function DropdownLink({ to, children, icon, onClick }) {
+function DropdownLink({ to, children, icon, onClick, isDark }) {
   return (
     <Link
       to={to}
       onClick={onClick}
-      className="flex items-center gap-3 rounded-2xl px-3 py-2.5 text-sm text-slate-300 transition hover:bg-white/5 hover:text-white"
+      className={`flex items-center gap-3 rounded-2xl px-3 py-2.5 text-sm transition ${
+        isDark
+          ? "text-slate-300 hover:bg-white/5 hover:text-white"
+          : "text-slate-700 hover:bg-slate-100 hover:text-slate-900"
+      }`}
     >
       {icon}
       <span>{children}</span>
@@ -372,7 +518,7 @@ function DropdownLink({ to, children, icon, onClick }) {
   );
 }
 
-function MobileNavLink({ to, children, icon, onClick }) {
+function MobileNavLink({ to, children, icon, onClick, isDark }) {
   return (
     <NavLink
       to={to}
@@ -380,8 +526,12 @@ function MobileNavLink({ to, children, icon, onClick }) {
       className={({ isActive }) =>
         `flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-medium transition ${
           isActive
-            ? "border border-indigo-500/20 bg-indigo-500/15 text-white"
-            : "text-slate-300 hover:bg-white/5 hover:text-white"
+            ? isDark
+              ? "border border-indigo-500/20 bg-indigo-500/15 text-white"
+              : "border border-indigo-200 bg-indigo-50 text-indigo-700"
+            : isDark
+            ? "text-slate-300 hover:bg-white/5 hover:text-white"
+            : "text-slate-700 hover:bg-slate-100 hover:text-slate-900"
         }`
       }
     >

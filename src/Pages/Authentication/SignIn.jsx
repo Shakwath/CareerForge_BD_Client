@@ -143,8 +143,7 @@ const SignIn = () => {
           initial={{ opacity: 0, y: 35 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.7 }}
-          className="mx-auto w-full max-w-xl"
-        >
+          className="mx-auto w-full max-w-xl">
           <div className="rounded-[32px] border border-white/70 bg-white/80 p-6 shadow-[0_20px_70px_rgba(15,23,42,0.12)] backdrop-blur-2xl sm:p-8">
             {/* heading */}
             <div className="mb-6 text-center">

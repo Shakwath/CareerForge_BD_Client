@@ -2,10 +2,11 @@ import { createBrowserRouter } from "react-router-dom";
 import RootLayout from "../Layouts/RootLayout";
 import Home from "../Pages/Home/Home";
 import Error from "../Pages/ErrorPage";
+import ErrorPage from "../Pages/ErrorPage";
 import SignIn from "../Pages/Authentication/SignIn";
 import Signup from "../Pages/Authentication/SignUp";
-import ErrorPage from "../Pages/ErrorPage";
 import Profile from "../Components/Dashboard/Profile";
+import Dashboard from "../Components/Dashboard/Dashboard";
 
 const router = createBrowserRouter([
   {
@@ -26,17 +27,23 @@ const router = createBrowserRouter([
         element: <Signup />,
       },
       {
-        path: "/updateprofile",
-        element: <Profile></Profile>,
+        path: "profile",
+        element: <Profile />,
       },
-
     ],
   },
 
-   {
-        path: '*',
-        element: <ErrorPage></ErrorPage>,
-      },
+  // Dashboard Route
+  {
+    path: "/dashboard",
+    element: <Dashboard></Dashboard>,
+  },
+
+  // Error Route
+  {
+    path: "*",
+    element: <ErrorPage />,
+  },
 ]);
 
 export default router;

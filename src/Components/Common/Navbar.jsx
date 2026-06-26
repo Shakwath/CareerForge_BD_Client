@@ -126,9 +126,14 @@ const Navbar = () => {
                   <DesktopNavItem
                     to="/roadmap"
                     icon={<Map size={16} />}
-                    isDark={isDark}
-                  >
+                    isDark={isDark}>
                     Roadmap
+                  </DesktopNavItem>
+                  <DesktopNavItem
+                    to="/price"
+                    icon={<Map size={16} />}
+                    isDark={isDark}>
+                    Price
                   </DesktopNavItem>
                 </>
               )}

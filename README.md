@@ -231,7 +231,7 @@ firebase deploy
 
 ## Author
 
-**Masad Rayan** — Frontend Developer
+**Masad Rayan** — Full Stack Developer
 
 - **GitHub:** [https://github.com/MasadRayan](https://github.com/MasadRayan)
 - **LinkedIn:** [https://www.linkedin.com/in/masad-rayan/](https://www.linkedin.com/in/masad-rayan/)

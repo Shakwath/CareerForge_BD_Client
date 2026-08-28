@@ -234,6 +234,7 @@ const DashboardLayout = () => {
               <img
                 src={user.photoURL}
                 alt={user?.displayName || "User"}
+                referrerPolicy="no-referrer"
                 className="h-10 w-10 rounded-lg object-cover ring-2 ring-emerald-500/20"
               />
             ) : (
@@ -353,6 +354,7 @@ const DashboardLayout = () => {
                   <img
                     src={user.photoURL}
                     alt={user?.displayName || "User"}
+                    referrerPolicy="no-referrer"
                     className="h-8 w-8 rounded-lg object-cover"
                   />
                 ) : (

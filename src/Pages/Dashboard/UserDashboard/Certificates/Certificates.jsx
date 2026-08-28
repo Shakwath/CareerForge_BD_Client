@@ -31,7 +31,51 @@ const SectionTag = ({ acc, count, children }) => (
 );
 
 const CertCard = ({ cert, index, reduced }) => {
+  const axiosSecure = useAxiosSecure();
   const [copied, setCopied] = useState(false);
+  const [downloading, setDownloading] = useState(false);
+
+  const handleDownload = async (e) => {
+    e.preventDefault();
+    if (downloading) return;
+    setDownloading(true);
+    try {
+      const res = await axiosSecure.get(`/api/certificate/${cert.id}/pdf`, {
+        responseType: "blob",
+      });
+      const contentType = res.headers["content-type"] || "application/pdf";
+      const blob = new Blob([res.data], { type: contentType });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `${cert.cert_number}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      const message =
+        err?.response?.data?.message ||
+        (err?.response?.data instanceof Blob
+          ? "Failed to download certificate"
+          : err?.message) ||
+        "Failed to download certificate";
+      // When responseType is blob, error body may be blob — try to parse
+      if (err?.response?.data instanceof Blob) {
+        try {
+          const text = await err.response.data.text();
+          const json = JSON.parse(text);
+          toast.error(json?.message || message);
+        } catch {
+          toast.error(message);
+        }
+      } else {
+        toast.error(message);
+      }
+    } finally {
+      setDownloading(false);
+    }
+  };
 
   const issued = new Date(cert.issued_at).toLocaleDateString("en-US", {
     month: "short",
@@ -115,13 +159,16 @@ const CertCard = ({ cert, index, reduced }) => {
         <div className="mt-auto flex w-full items-center justify-between pt-5 text-[11px]">
           <span className="font-data text-base-content/40">Issued {issued}</span>
           <a
-            href={cert.pdf_url}
-            target="_blank"
+            href={`${import.meta.env.VITE_API_URL || axiosSecure.defaults.baseURL || "http://localhost:3000"}/api/certificate/${cert.id}/pdf`}
+            download={`${cert.cert_number}.pdf`}
             rel="noreferrer"
-            className="inline-flex items-center gap-1.5 rounded-lg px-2 py-1 font-medium text-primary transition hover:bg-primary/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
+            aria-busy={downloading}
+            aria-disabled={downloading}
+            onClick={handleDownload}
+            className={`inline-flex items-center gap-1.5 rounded-lg px-2 py-1 font-medium text-primary transition hover:bg-primary/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 ${downloading ? "pointer-events-none opacity-60" : ""}`}
           >
-            <Download className="h-3.5 w-3.5" />
-            PDF
+            <Download className={`h-3.5 w-3.5 ${downloading ? "animate-pulse" : ""}`} />
+            {downloading ? "…" : "PDF"}
           </a>
         </div>
       </div>
